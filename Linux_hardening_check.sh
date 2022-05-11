@@ -168,11 +168,31 @@ echo -e "${YELLOW}#################################${NC}\n"
 
 sleep 1
 
+OPTION_23=`netstat -tulpn | grep ":23 " | grep "tcp "i | wc -l`
+if [ $OPTION_23 == 1 ]; then
+ echo -e "${RED}FAILED:: ${NC}Telnet Server or any other daemon running on port number 23"
+else
+ echo -e "${GREEN}PASSED:: ${NC}No daemon or Telnet Server is listening on port 23"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
 OPTION_21=`netstat -tulpn | grep ":21 " | grep "tcp "i | wc -l`
 if [ $OPTION_21 == 1 ]; then
- echo -e "${RED}FAILED:: ${NC}Telnet Server or any other daemon running on port number 21"
+ echo -e "${RED}FAILED:: ${NC}FTP Server or any other daemon running on port number 21"
 else
- echo -e "${GREEN}PASSED:: ${NC}No daemon or Telnet Server is listening on port 21"
+ echo -e "${GREEN}PASSED:: ${NC}No daemon or FTP Server is listening on port 21"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+OPTION_69=`netstat -tulpn | grep ":69 " | grep "tcp "i | wc -l`
+if [ $OPTION_69 == 1 ]; then
+ echo -e "${RED}FAILED:: ${NC}TFTP Server or any other daemon running on port number 69"
+else
+ echo -e "${GREEN}PASSED:: ${NC}No daemon or TFTP Server is listening on port 69"
 fi
 echo -e "${YELLOW}#################################${NC}\n"
 
@@ -232,7 +252,7 @@ sleep 1
 
 OBS_PKG=0
 OBS_PKG=`rpm -qa telnet-server rsh rlogin rcp ypserv ypbind tftp tftp-server talk talk-server telnet | wc -l`
-if [ $OBS_PKG == 1 ]; then
+if [ $OBS_PKG != 0 ]; then
  echo -e "${RED}FAILED:: ${NC}Either one or more obselete packages found"
  rpm -qa telnet-server rsh rlogin rcp ypserv ypbind tftp tftp-server talk talk-server telnet
 else
@@ -242,6 +262,37 @@ echo -e "${YELLOW}#################################${NC}\n"
 
 sleep 1
 
+GET_ENF=`getenforce | grep -i disabled | wc -l`
+if [ $GET_ENF == 1 ]; then
+ echo -e "${RED}FAILED:: ${NC}Selinux is disabled via getenforce command"
+else
+ echo -e "${GREEN}PASSED:: ${NC}Selinux is active and enabled"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+SRV_AUDIT=`ps -ef | grep auditd | grep sbin | grep -v grep | wc -l`
+if [ $SRV_AUDIT == 0 ]; then
+ echo -e "${RED}FAILED:: ${NC}Audit daemon is not running"
+else
+ echo -e "${GREEN}PASSED:: ${NC}Audit daemon is running"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+OPTION_PAM1=`ls -l /etc/pam.d/system-auth | awk '{print $1}' | grep "^-rw-r--r--" | wc -l`
+if [ $OPTION_PAM1 == 1 ]; then
+ echo -e "${GREEN}PASSED:: ${NC}Permission is correct in /etc/pam.d/system-auth"
+else
+ echo -e "${RED}FAILED:: ${NC}Permission is incorrect in /etc/pam.d/system-auth"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
 }
 
 test_normal
+
