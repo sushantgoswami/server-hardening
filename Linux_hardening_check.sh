@@ -90,15 +90,21 @@ echo -e "${YELLOW}#################################${NC}\n"
 echo -e "${GREEN}Starting qualification test${NC}"
 echo -e "${YELLOW}#################################${NC}\n"
 
+sleep 1
+
 VERSION_NUMBER=`cat $SCRIPT_NAME | grep -i version_n | head -1 | awk '{print $3}'`
 echo -e "${GREEN}Script version number is $VERSION_NUMBER${NC}"
 echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
 
 REDHAT_RELEASE=`cat /etc/redhat-release`
 echo -e "${GREEN}Linux Version: $REDHAT_RELEASE${NC}"
 echo -e "${YELLOW}#################################${NC}\n"
 
-echo -e "${YELLOW}######${NC} Starting GRUB tests ${YELLOW}######${NC}\n"
+sleep 1
+
+echo -e "${YELLOW}######${NC} Starting NORMAL tests ${YELLOW}######${NC}\n"
 GRUB_PASSWD_CHECK=0
 GRUB_PASSWD_CHECK=`cat /boot/grub2/grub.cfg| grep -i password | grep sha | wc -l`
 if [ $GRUB_PASSWD_CHECK == 1 ]; then
@@ -108,6 +114,8 @@ else
 fi
 echo -e "${YELLOW}#################################${NC}\n"
 
+sleep 1
+
 GRUB_FILE_PERM_CHECK=0
 GRUB_FILE_PERM_CHECK=`ls -l /boot/grub2/grub.cfg | grep "rw-------" | wc -l`
 if [ $GRUB_FILE_PERM_CHECK == 1 ]; then
@@ -116,6 +124,123 @@ else
  echo -e "${RED}FAILED:: ${NC}600 permission is not set on /boot/grub2/grub.cfg"
 fi
 echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+DEVICE1=`mount | grep " / " | awk '{print $1}'`
+DEVICE2=`mount | grep " /tmp " | awk '{print $1}'`
+if [ $DEVICE1 == $DEVICE2 ]; then
+ echo -e "${RED}FAILED:: ${NC}/tmp directory is using the same filesystem as main root filesystem"
+else
+ echo -e "${GREEN}PASSED:: ${NC}/tmp directory is using seperate filesystem from main root filesystem"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+OPTION_TMP=`mount | grep " /tmp " | grep nosuid | grep nodev | wc -l`
+if [ $OPTION_TMP == 1 ]; then
+ echo -e "${GREEN}PASSED:: ${NC}/tmp is mounted with nodev and nosuid option"
+else
+ echo -e "${RED}FAILED:: ${NC}/tmp is not mounted with nodev and nosuid option"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+OPTION_SHM=`mount | grep /dev/shm | grep nosuid | grep nodev | wc -l`
+if [ $OPTION_SHM == 1 ]; then
+ echo -e "${GREEN}PASSED:: ${NC}/dev/shm is mounted with nodev and nosuid option"
+else
+ echo -e "${RED}FAILED:: ${NC}/dev/shm is not mounted with nodev and nosuid option"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+OPTION_SHADOW=`ls -l /etc/shadow | awk '{print $1}' | grep "^----------" | wc -l`
+if [ $OPTION_SHADOW == 1 ]; then
+ echo -e "${GREEN}PASSED:: ${NC}/etc/shadow file permission is set to 000"
+else
+ echo -e "${RED}FAILED:: ${NC}/etc/shadow file permission is not set to 000"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+OPTION_21=`netstat -tulpn | grep ":21 " | grep "tcp "i | wc -l`
+if [ $OPTION_21 == 1 ]; then
+ echo -e "${RED}FAILED:: ${NC}Telnet Server or any other daemon running on port number 21"
+else
+ echo -e "${GREEN}PASSED:: ${NC}No daemon or Telnet Server is listening on port 21"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+OPTION_513=`netstat -tulpn | grep ":513 " | grep "tcp " | wc -l`
+OPTION_514=`netstat -tulpn | grep ":514 " | grep "tcp " | wc -l`
+if [ $OPTION_513 == 1 ] || [ $OPTION_514 == 1 ]; then
+ echo -e "${RED}FAILED:: ${NC}rlogin or rsh is listening on port 514 or 513"
+else
+ echo -e "${GREEN}PASSED:: ${NC}rlogin or rsh is not listening on port 514 or 513"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+SSHD_ROOT_LOGIN=`cat /etc/ssh/sshd_config | grep -i "PermitRootLogin" | cut -c1 | grep -i p | wc -l`
+if [ $SSHD_ROOT_LOGIN == 1 ]; then
+ echo -e "${RED}FAILED:: ${NC}Permit root login is enabled in /etc/ssh/sshd_config"
+else
+ echo -e "${GREEN}PASSED:: ${NC}Permit root login is not enabled in /etc/ssh/sshd_config"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+SSHD_PROTO=1
+SSHD_PROTO=`cat /etc/ssh/sshd_config | grep -i "^Protocol" | awk '{print $2}'`
+if [ $SSHD_PROTO == 1 ]; then
+ echo -e "${RED}FAILED:: ${NC}sshd protocol is not set to 2"
+else
+ echo -e "${GREEN}PASSED:: ${NC}sshd protocol is set to 2"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+PERMIT_EMP=`cat /etc/ssh/sshd_config | grep -i "^permitemptypasswords" | awk '{print $2}' | grep -i no | wc -l`
+if [ $PERMIT_EMP == 1 ]; then
+ echo -e "${GREEN}PASSED:: ${NC}Permit empty password in /etc/ssh/sshd_config is set to no"
+else
+ echo -e "${RED}FAILED:: ${NC}Permit empty password in /etc/ssh/sshd_config is not set to no"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+SSHD_LOG=`cat /etc/ssh/sshd_config |  grep -i loglevel | awk '{print $2}' | grep -i info | wc -l`
+if [ $SSHD_LOG == 1 ]; then
+ echo -e "${GREEN}PASSED:: ${NC}SSH loglevel is set to INFO in /etc/ssh/sshd_config"
+else
+ echo -e "${RED}FAILED:: ${NC}SSH loglevel is not set to info in /etc/ssh/sshd_config"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
+
+OBS_PKG=0
+OBS_PKG=`rpm -qa telnet-server rsh rlogin rcp ypserv ypbind tftp tftp-server talk talk-server telnet | wc -l`
+if [ $OBS_PKG == 1 ]; then
+ echo -e "${RED}FAILED:: ${NC}Either one or more obselete packages found"
+ rpm -qa telnet-server rsh rlogin rcp ypserv ypbind tftp tftp-server talk talk-server telnet
+else
+ echo -e "${GREEN}PASSED:: ${NC}No obselete remote packages found"
+fi
+echo -e "${YELLOW}#################################${NC}\n"
+
+sleep 1
 
 }
 
