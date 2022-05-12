@@ -1,0 +1,31 @@
+---
+- hosts: INFO
+  gather_facts: false
+
+  tasks:
+
+    - name: Cleanup of old installer
+      file:
+        path: /tmp/Linux_hardening_check_installer
+        state: absent
+
+    - name: Create the installer directory again
+      file:
+        path: /tmp/Linux_hardening_check_installer
+        state: directory
+
+    - name: Copy script Linux_hardening_check.sh to server
+      copy:
+        src: /root/c188578/qualification_scripts/Linux_hardening_check.sh
+        dest: /tmp/Linux_hardening_check_installer
+        mode: 0755
+
+    - name: Copy installer script to server
+      copy:
+        src: /root/c188578/qualification_scripts/installer
+        dest: /tmp/Linux_hardening_check_installer
+        mode: 0755
+
+    - name: Go to the folder and execute installer
+      shell: cd /tmp/Linux_hardening_check_installer; /tmp/Linux_hardening_check_installer/installer
+
