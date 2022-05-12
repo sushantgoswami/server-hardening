@@ -1,0 +1,59 @@
+#!/bin/bash
+############# Name : installer script for Linux_hardening_check.sh ###############
+#################### Version ######################
+# version 0.01 written by Sushant Goswami Dated 12-may-2022
+# Revision
+# Revision
+# Revision
+# Revision
+######################## Scope ######################
+# The script is intended to install Linux_hardening_check.sh script in system.
+# The script also setup cronjob for Linux_hardening_check.sh
+##################### User Defined Variables #########################
+PRIMARY_EMAIL=goswami_sushant@mail.com
+SECONDARY_EMAIL=karthick_ma@network.com
+PRIMARY_EMAIL_ENABLE=1
+SECONDARY_EMAIL_ENABLE=1
+CRON_HOUR=5
+CRON_MINUTE=10
+############# Pre Fixed Variables ##############################
+SERVER_NAME=`hostname`
+##################################
+
+if [ ! -d /usr/share/Linux_hardening_check ]; then
+mkdir -p /usr/share/Linux_hardening_check
+fi
+
+CRON_VALUE=`cat /var/spool/cron/root | grep "/usr/share/Linux_hardening_check/Linux_hardening_check.sh" | awk '{print $NF}' | head -1`
+if [ ! -z $CRON_VALUE ]; then
+sed -i '/Linux_hardening_check.sh/d' /var/spool/cron/root
+fi
+
+CRON_VALUE=`cat /var/spool/cron/root | grep "/usr/share/Linux_hardening_check/Linux_hardening_check.sh" | awk '{print $NF}' | head -1`
+if [ -z $CRON_VALUE ]; then
+echo "$CRON_MINUTE $CRON_HOUR * * * /usr/share/Linux_hardening_check/Linux_hardening_check.sh > /dev/null 2>&1" >> /var/spool/cron/root
+fi
+
+if [ ! -z $CRON_VALUE ] && [ $CRON_VALUE != "/usr/share/Linux_hardening_check/Linux_hardening_check.sh" ]; then
+echo "$CRON_MINUTE $CRON_HOUR * * * /usr/share/Linux_hardening_check/Linux_hardening_check.sh > /dev/null 2>&1" >> /var/spool/cron/root
+fi
+
+if [ ! -f /usr/share/Linux_hardening_check/Linux_hardening_check.sh ]; then
+cp Linux_hardening_check.sh /usr/share/Linux_hardening_check
+fi
+
+if [ -f /usr/share/Linux_hardening_check/Linux_hardening_check.sh ]; then
+
+CURRENT_VERSION_NUMBER=`cat Linux_hardening_check.sh | grep Version_No | awk '{print $3}'`
+INSTALLED_VERSION_NUMBER=`cat /usr/share/Linux_hardening_check/Linux_hardening_check.sh | grep Version_No | awk '{print $3}'`
+
+if [ -z $INSTALLED_VERSION_NUMBER ]; then
+ INSTALLED_VERSION_NUMBER=0.0
+fi
+
+if [ $(echo "$CURRENT_VERSION_NUMBER>$INSTALLED_VERSION_NUMBER"| bc) -eq 1 ]; then
+mv /usr/share/Linux_hardening_check/Linux_hardening_check.sh /usr/share/Linux_hardening_check/Linux_hardening_check.sh-$INSTALLED_VERSION_NUMBER
+cp -rf Linux_hardening_check.sh /usr/share/Linux_hardening_check/
+fi
+
+fi
