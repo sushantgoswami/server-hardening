@@ -1,4 +1,4 @@
-# server-hardening
+Linux Server hardening ( CentOS, Redhat )
 
 This application and scripts are intended to check hardening of CentOS/Redhat 7,8 servers in large environment
 
